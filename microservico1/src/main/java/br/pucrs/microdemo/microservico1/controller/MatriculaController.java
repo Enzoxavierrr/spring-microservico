@@ -4,6 +4,7 @@ import java.util.List;
 
 import br.pucrs.microdemo.microservico1.dto.MatriculaRequest;
 import br.pucrs.microdemo.microservico1.dto.MatriculaResponse;
+import br.pucrs.microdemo.microservico1.service.MatriculaEfetuada;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -43,7 +44,8 @@ public class MatriculaController {
                     content = @Content(schema = @Schema(implementation = MatriculaResponse.class))),
             @ApiResponse(responseCode = "400", description = "Campos obrigatorios ausentes", content = @Content),
             @ApiResponse(responseCode = "404", description = "Estudante, disciplina ou horario nao encontrado", content = @Content),
-            @ApiResponse(responseCode = "409", description = "Matricula duplicada ou disciplina ambigua", content = @Content)
+            @ApiResponse(responseCode = "409", description = "Matricula duplicada ou disciplina ambigua", content = @Content),
+            @ApiResponse(responseCode = "502", description = "Microservico2 indisponivel para gerar comprovante", content = @Content)
     })
     public MatriculaResponse matricular(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -51,10 +53,12 @@ public class MatriculaController {
                     required = true,
                     content = @Content(schema = @Schema(implementation = MatriculaRequest.class)))
             @RequestBody MatriculaRequest request) {
-        return MatriculaResponse.from(matriculaService.matricular(
+        MatriculaEfetuada matriculaEfetuada = matriculaService.matricular(
                 request.matriculaEstudante(),
                 request.codigoDisciplina(),
-                request.horario()));
+                request.horario());
+
+        return MatriculaResponse.from(matriculaEfetuada.matricula(), matriculaEfetuada.comprovante());
     }
 
     @GetMapping("/estudantes/{matriculaEstudante}")

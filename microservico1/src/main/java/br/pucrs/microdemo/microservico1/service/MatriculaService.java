@@ -9,9 +9,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import br.pucrs.microdemo.microservico1.client.Microservico2Client;
 import br.pucrs.microdemo.microservico1.domain.Disciplina;
 import br.pucrs.microdemo.microservico1.domain.Estudante;
 import br.pucrs.microdemo.microservico1.domain.Matricula;
+import br.pucrs.microdemo.microservico1.dto.ComprovanteMatriculaRequest;
+import br.pucrs.microdemo.microservico1.dto.ComprovanteMatriculaResponse;
 import br.pucrs.microdemo.microservico1.repository.DisciplinaRepository;
 import br.pucrs.microdemo.microservico1.repository.EstudanteRepository;
 import br.pucrs.microdemo.microservico1.repository.MatriculaRepository;
@@ -21,17 +24,20 @@ public class MatriculaService {
     private final MatriculaRepository matriculaRepository;
     private final EstudanteRepository estudanteRepository;
     private final DisciplinaRepository disciplinaRepository;
+    private final Microservico2Client microservico2Client;
 
     public MatriculaService(
             MatriculaRepository matriculaRepository,
             EstudanteRepository estudanteRepository,
-            DisciplinaRepository disciplinaRepository) {
+            DisciplinaRepository disciplinaRepository,
+            Microservico2Client microservico2Client) {
         this.matriculaRepository = matriculaRepository;
         this.estudanteRepository = estudanteRepository;
         this.disciplinaRepository = disciplinaRepository;
+        this.microservico2Client = microservico2Client;
     }
 
-    public Matricula matricular(String matriculaEstudante, String codigoDisciplina, String horario) {
+    public MatriculaEfetuada matricular(String matriculaEstudante, String codigoDisciplina, String horario) {
         validarCamposObrigatorios(matriculaEstudante, codigoDisciplina, horario);
 
         Estudante estudante = estudanteRepository.findByMatricula(matriculaEstudante.trim())
@@ -43,7 +49,11 @@ public class MatriculaService {
             throw new ResponseStatusException(CONFLICT, "Estudante ja matriculado nesta disciplina e horario.");
         }
 
-        return matriculaRepository.save(new Matricula(estudante, disciplina));
+        Matricula matricula = matriculaRepository.save(new Matricula(estudante, disciplina));
+        ComprovanteMatriculaResponse comprovante = microservico2Client.gerarComprovante(
+                ComprovanteMatriculaRequest.from(matricula));
+
+        return new MatriculaEfetuada(matricula, comprovante);
     }
 
     public List<Matricula> listarPorEstudante(String matriculaEstudante) {

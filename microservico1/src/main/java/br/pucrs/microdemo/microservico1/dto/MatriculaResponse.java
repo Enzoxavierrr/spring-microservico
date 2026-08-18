@@ -12,11 +12,19 @@ public record MatriculaResponse(
         EstudanteResponse estudante,
 
         @Schema(description = "Disciplina e horario escolhidos.")
-        DisciplinaResponse disciplina) {
+        DisciplinaResponse disciplina,
+
+        @Schema(description = "Comprovante gerado pelo microservico2.")
+        ComprovanteMatriculaResponse comprovante) {
     public static MatriculaResponse from(Matricula matricula) {
+        return from(matricula, null);
+    }
+
+    public static MatriculaResponse from(Matricula matricula, ComprovanteMatriculaResponse comprovante) {
         return new MatriculaResponse(
                 matricula.getId(),
                 EstudanteResponse.from(matricula.getEstudante()),
-                DisciplinaResponse.from(matricula.getDisciplina()));
+                DisciplinaResponse.from(matricula.getDisciplina()),
+                comprovante);
     }
 }

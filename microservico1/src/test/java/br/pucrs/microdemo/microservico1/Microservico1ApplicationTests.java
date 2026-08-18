@@ -95,7 +95,10 @@ class Microservico1ApplicationTests {
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.estudante.matricula").value("2024004"))
 				.andExpect(jsonPath("$.disciplina.codigo").value("INF101"))
-				.andExpect(jsonPath("$.disciplina.horario").value("A"));
+				.andExpect(jsonPath("$.disciplina.horario").value("A"))
+				.andExpect(jsonPath("$.comprovante.protocolo").value("MAT-2024004-INF101-A"))
+				.andExpect(jsonPath("$.comprovante.mensagem").value(
+						"Matricula efetuada com sucesso para Carlos Pereira na disciplina Programacao I, horario A."));
 	}
 
 }
