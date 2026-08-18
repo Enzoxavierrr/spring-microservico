@@ -1,0 +1,29 @@
+services:
+  banco:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: postgres  
+    ports:
+      - 5432:5432
+  doiscontainers-1:
+    depends_on:
+        banco:
+          condition: service_started
+    build:
+      context: ./microservico1
+      dockerfile: Dockerfile
+      tags: ["microservicedemo", "doiscontainers-1"]
+    ports:
+      - 443:443
+  doiscontainers-2:
+    depends_on:
+        banco:
+          condition: service_started
+    build:
+      context: ./microservico2
+      dockerfile: Dockerfile
+      tags: ["microservicedemo", "doiscontainers-2"]
+    ports:
+      - 444:443
