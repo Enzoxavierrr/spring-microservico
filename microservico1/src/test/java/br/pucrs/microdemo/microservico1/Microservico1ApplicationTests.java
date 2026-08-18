@@ -1,9 +1,11 @@
 package br.pucrs.microdemo.microservico1;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,6 +24,17 @@ class Microservico1ApplicationTests {
 
 	@Test
 	void contextLoads() {
+	}
+
+	@Test
+	void documentacaoOpenApiEScalarDisponiveis() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.info.title").value("Microservico Academico"));
+
+		mockMvc.perform(get("/scalar"))
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString("Scalar")));
 	}
 
 	@Test
@@ -54,6 +67,34 @@ class Microservico1ApplicationTests {
 		mockMvc.perform(get("/estudantes").param("nome", "ana"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(2)));
+	}
+
+	@Test
+	void matriculaEstudanteNaDisciplinaComHorario() throws Exception {
+		mockMvc.perform(post("/estudantes")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"nome\":\"Carlos Pereira\",\"matricula\":\"2024004\"}"))
+				.andExpect(status().isCreated());
+
+		mockMvc.perform(post("/disciplinas")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"codigo\":\"INF101\",\"nome\":\"Programacao I\",\"horario\":\"A\"}"))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.codigo").value("INF101"))
+				.andExpect(jsonPath("$.horario").value("A"));
+
+		mockMvc.perform(get("/disciplinas/INF101/horarios"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].horario").value("A"));
+
+		mockMvc.perform(post("/matriculas")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"matriculaEstudante\":\"2024004\",\"codigoDisciplina\":\"INF101\",\"horario\":\"A\"}"))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.estudante.matricula").value("2024004"))
+				.andExpect(jsonPath("$.disciplina.codigo").value("INF101"))
+				.andExpect(jsonPath("$.disciplina.horario").value("A"));
 	}
 
 }

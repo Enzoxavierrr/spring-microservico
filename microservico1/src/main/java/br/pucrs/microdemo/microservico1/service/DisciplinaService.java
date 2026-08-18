@@ -52,6 +52,14 @@ public class DisciplinaService {
         return disciplinaRepository.findAll();
     }
 
+    public List<Disciplina> listarHorariosPorCodigo(String codigo) {
+        if (vazio(codigo)) {
+            throw new ResponseStatusException(BAD_REQUEST, "Codigo da disciplina obrigatorio.");
+        }
+
+        return disciplinaRepository.findByCodigoIgnoreCase(codigo.trim());
+    }
+
     private void validarCamposObrigatorios(Disciplina disciplina) {
         if (disciplina == null) {
             throw new ResponseStatusException(BAD_REQUEST, "Body da requisicao obrigatorio.");
