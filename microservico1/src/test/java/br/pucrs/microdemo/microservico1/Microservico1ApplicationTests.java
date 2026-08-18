@@ -54,7 +54,7 @@ class Microservico1ApplicationTests {
 	}
 
 	@Test
-	void consultaEstudantesPorParteDoNome() throws Exception {
+	void listaTodosEstudantes() throws Exception {
 		mockMvc.perform(post("/estudantes")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"nome\":\"Ana Costa\",\"matricula\":\"2024002\"}"))
@@ -64,9 +64,10 @@ class Microservico1ApplicationTests {
 				.content("{\"nome\":\"Anabela Santos\",\"matricula\":\"2024003\"}"))
 				.andExpect(status().isCreated());
 
-		mockMvc.perform(get("/estudantes").param("nome", "ana"))
+		mockMvc.perform(get("/estudantes"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(2)));
+				.andExpect(jsonPath("$[?(@.matricula == '2024002')]", hasSize(1)))
+				.andExpect(jsonPath("$[?(@.matricula == '2024003')]", hasSize(1)));
 	}
 
 	@Test

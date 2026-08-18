@@ -20,77 +20,60 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Tag(name = "Estudantes", description = "Cadastro e consulta de estudantes.")
 public class EstudanteController {
-    private final EstudanteService estudanteService;
+        private final EstudanteService estudanteService;
 
-    public EstudanteController(EstudanteService estudanteService) {
-        this.estudanteService = estudanteService;
-    }
+        public EstudanteController(EstudanteService estudanteService) {
+                this.estudanteService = estudanteService;
+        }
 
-    @PostMapping("/estudantes")
-    @Operation(
-            summary = "Cadastrar estudante",
-            description = "Cria um estudante usando nome e numero de matricula.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Estudante cadastrado",
-                    content = @Content(schema = @Schema(implementation = EstudanteResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Nome ou matricula ausente", content = @Content),
-            @ApiResponse(responseCode = "409", description = "Matricula ja cadastrada", content = @Content)
-    })
-    public ResponseEntity<EstudanteResponse> cadastrarEstudante(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Dados do estudante.",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = EstudanteRequest.class)))
-            @RequestBody EstudanteRequest request) {
-        Estudante estudante = new Estudante(request.nome(), request.matricula());
-        return estudanteService.cadastrar(estudante)
-                .map(salvo -> ResponseEntity
-                        .created(URI.create("/estudantes/" + salvo.getMatricula()))
-                        .body(EstudanteResponse.from(salvo)))
-                .orElse(ResponseEntity.status(409).build());
-    }
+        @PostMapping("/estudantes")
+        @Operation(summary = "Cadastrar estudante", description = "Cria um estudante usando nome e numero de matricula.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "201", description = "Estudante cadastrado", content = @Content(schema = @Schema(implementation = EstudanteResponse.class))),
+                        @ApiResponse(responseCode = "400", description = "Nome ou matricula ausente", content = @Content),
+                        @ApiResponse(responseCode = "409", description = "Matricula ja cadastrada", content = @Content)
+        })
+        public ResponseEntity<EstudanteResponse> cadastrarEstudante(
+                        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dados do estudante.", required = true, content = @Content(schema = @Schema(implementation = EstudanteRequest.class))) @RequestBody EstudanteRequest request) {
+                Estudante estudante = new Estudante(request.nome(), request.matricula());
+                return estudanteService.cadastrar(estudante)
+                                .map(salvo -> ResponseEntity
+                                                .created(URI.create("/estudantes/" + salvo.getMatricula()))
+                                                .body(EstudanteResponse.from(salvo)))
+                                .orElse(ResponseEntity.status(409).build());
+        }
 
-    @GetMapping("/estudantes/{matricula}")
-    @Operation(
-            summary = "Consultar estudante por matricula",
-            description = "Retorna um estudante pelo numero exato da matricula.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Estudante encontrado",
-                    content = @Content(schema = @Schema(implementation = EstudanteResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Estudante nao encontrado", content = @Content)
-    })
-    public ResponseEntity<EstudanteResponse> consultarPorMatricula(
-            @Parameter(description = "Numero de matricula do estudante.", example = "2024001")
-            @PathVariable String matricula) {
-        return estudanteService.consultarPorMatricula(matricula)
-                .map(EstudanteResponse::from)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+        @GetMapping("/estudantes/{matricula}")
+        @Operation(summary = "Consultar estudante por matricula", description = "Retorna um estudante pelo numero exato da matricula.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Estudante encontrado", content = @Content(schema = @Schema(implementation = EstudanteResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "Estudante nao encontrado", content = @Content)
+        })
+        public ResponseEntity<EstudanteResponse> consultarPorMatricula(
+                        @Parameter(description = "Numero de matricula do estudante.", example = "2024001") @PathVariable String matricula) {
+                return estudanteService.consultarPorMatricula(matricula)
+                                .map(EstudanteResponse::from)
+                                .map(ResponseEntity::ok)
+                                .orElse(ResponseEntity.notFound().build());
+        }
 
-    @GetMapping("/estudantes")
-    @Operation(
-            summary = "Consultar estudantes por nome",
-            description = "Busca estudantes por um pedaco do nome. Quando houver mais de um match, retorna uma lista.")
-    @ApiResponse(responseCode = "200", description = "Lista de estudantes encontrados",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = EstudanteResponse.class))))
-    public List<EstudanteResponse> consultarPorNome(
-            @Parameter(description = "Parte do nome do estudante.", example = "ana")
-            @RequestParam("nome") String nome) {
-        return estudanteService.consultarPorNome(nome).stream()
-                .map(EstudanteResponse::from)
-                .toList();
-    }
+        @GetMapping("/estudantes")
+        @Operation(summary = "Listar todos os estudantes", description = "Retorna uma lista com todos os estudantes cadastrados.")
+        @ApiResponse(responseCode = "200", description = "Lista de todos os estudantes", content = @Content(array = @ArraySchema(schema = @Schema(implementation = EstudanteResponse.class))))
+        public List<EstudanteResponse> listarTodos() {
+                return estudanteService.listarTodos().stream()
+                                .map(EstudanteResponse::from)
+                                .toList();
+        }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> tratarRequisicaoInvalida(IllegalArgumentException exception) {
-        return ResponseEntity.badRequest().body(exception.getMessage());
-    }
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<String> tratarRequisicaoInvalida(IllegalArgumentException exception) {
+                return ResponseEntity.badRequest().body(exception.getMessage());
+        }
 }

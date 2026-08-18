@@ -45,4 +45,8 @@ public class EstudanteService {
     private boolean isBlank(String texto) {
         return texto == null || texto.trim().isEmpty();
     }
+
+    public List<Estudante> listarTodos() {
+        return estudanteRepository.findAll();
+    }
 }

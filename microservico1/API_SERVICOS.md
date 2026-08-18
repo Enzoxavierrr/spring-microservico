@@ -37,15 +37,11 @@ Responses:
 - `200 OK`: estudante encontrado.
 - `404 Not Found`: estudante nao encontrado.
 
-### `GET /estudantes?nome={parteDoNome}`
-
-Parametros:
-
-- `nome`: trecho do nome usado na busca.
+### `GET /estudantes`
 
 Response:
 
-- `200 OK`: lista de estudantes encontrados.
+- `200 OK`: lista com todos os estudantes cadastrados.
 
 ## Servico de disciplinas
 
